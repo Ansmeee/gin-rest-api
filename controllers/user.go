@@ -2,12 +2,11 @@ package controllers
 
 import (
 	file "gin-rest-api/lib"
+	response "gin-rest-api/lib"
 	user "gin-rest-api/models"
 	"github.com/gin-gonic/gin"
 )
 
-
-type response = map[string]interface{}
 
 func Signup(context *gin.Context)  {
 	// request form
@@ -15,7 +14,7 @@ func Signup(context *gin.Context)  {
 	userPass := context.DefaultPostForm("userPass", "")
 
 	// init response data
-	response := make(response)
+	response := make(response.Response)
 
 	// validate user name and password
 	if userName == "" {
@@ -28,6 +27,15 @@ func Signup(context *gin.Context)  {
 	if userPass == "" {
 		response["code"] = 400
 		response["message"] = "请输入密码！"
+		context.JSON(200, response)
+		return
+	}
+
+	// user already signuped or not
+	userExists := file.GetUser(userName)
+	if userExists {
+		response["code"] = 400
+		response["message"] = "验证失败：该用户已存在！"
 		context.JSON(200, response)
 		return
 	}
@@ -57,7 +65,7 @@ func Signin(context *gin.Context)  {
 	userPass := context.DefaultPostForm("userPass", "")
 
 	// init response data
-	response := make(response)
+	response := make(response.Response)
 	if userName == "" {
 		response["code"] = 400
 		response["message"] = "验证失败：请输入用户名！"
