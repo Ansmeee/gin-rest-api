@@ -32,15 +32,19 @@ func Signup(context *gin.Context)  {
 
 	// save user info
 	createRes := file.CreateUserInfo(userName, userPass)
-	if createRes == false {
-		response["code"] = 500
-		response["message"] = "注册失败！"
-		context.JSON(200, response)
-		return
-	}
 
 	// response with success
-	response["message"] = "注册成功！"
+	if createRes == false {
+		response["message"] = "注册成功！"
+		context.JSON(200, response)
+		return
+
+	}
+
+
+	// response with error
+	response["code"] = 500
+	response["message"] = "注册失败！"
 	context.JSON(200, response)
 	return
 }
