@@ -8,7 +8,6 @@ import (
 type User struct {
 	userName string
 	userPass string
-	email string
 }
 
 // encrypt the userpass

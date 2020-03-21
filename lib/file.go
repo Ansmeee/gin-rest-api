@@ -10,7 +10,7 @@ import (
 
 const UserInfoDir = "./.user/"
 
-func GetUser(userName string) bool {
+func GetUserName(userName string) bool {
 	filePath := UserInfoDir + userName + ".pass"
 
 	// check user file exists
@@ -27,13 +27,6 @@ func GetUserPass(userName string) string  {
 	var userPass = ""
 	// get file content from user.pass file first
 	filePath := UserInfoDir + userName + ".pass"
-
-	//fileHandle, error := os.OpenFile(filePath, os.O_RDONLY, 0777)
-	//if error != nil {
-	//	fileHandle.Close()
-	//	fmt.Printf("GetUserPass Error：can not open file %s, %s\n", filePath, error)
-	//}
-
 	fileContent, error := ioutil.ReadFile(filePath)
 	if error != nil {
 		fmt.Printf("GetUserPass Error：can not get content from file %s, %s\n", filePath, error)

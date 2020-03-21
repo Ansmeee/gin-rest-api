@@ -32,7 +32,7 @@ func Signup(context *gin.Context)  {
 	}
 
 	// user already signuped or not
-	userExists := file.GetUser(userName)
+	userExists := file.GetUserName(userName)
 	if userExists {
 		response["code"] = 400
 		response["message"] = "验证失败：该用户已存在！"
