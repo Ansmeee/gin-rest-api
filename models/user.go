@@ -12,7 +12,7 @@ type User struct {
 }
 
 // encrypt the userpass
-func EncryptUserpass(userPass string) []byte {
+func EncryptUserPass(userPass string) []byte {
 	encrypter := md5.New()
 	io.WriteString(encrypter, userPass)
 

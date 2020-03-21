@@ -8,4 +8,5 @@ import user "gin-rest-api/controllers"
 func Register(engine *gin.Engine)  {
 	engine.GET("/", home.Index)
 	engine.POST("/signup", user.Signup)
+	engine.POST("/signin", user.Signin)
 }

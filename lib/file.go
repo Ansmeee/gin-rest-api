@@ -3,12 +3,50 @@ package lib
 import (
 	"fmt"
 	user "gin-rest-api/models"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
+const UserInfoDir = "./.user/"
+
+func GetUser(userName string) bool {
+	filePath := UserInfoDir + userName + ".pass"
+
+	// check user file exists
+	_, error := os.Stat(filePath)
+	if error == nil {
+		return true
+	}
+
+	fmt.Printf("GetUser Error: user file not exists %s, %s", filePath, error)
+	return false
+}
+
+func GetUserPass(userName string) string  {
+	var userPass = ""
+	// get file content from user.pass file first
+	filePath := UserInfoDir + userName + ".pass"
+
+	//fileHandle, error := os.OpenFile(filePath, os.O_RDONLY, 0777)
+	//if error != nil {
+	//	fileHandle.Close()
+	//	fmt.Printf("GetUserPass Error：can not open file %s, %s\n", filePath, error)
+	//}
+
+	fileContent, error := ioutil.ReadFile(filePath)
+	if error != nil {
+		fmt.Printf("GetUserPass Error：can not get content from file %s, %s\n", filePath, error)
+		return userPass
+	}
+
+	userPass = string(fileContent)
+
+	return userPass
+}
+
 func CreateUserInfo(userName, userPass string) bool {
-	filePath := "./.user/" + userName + ".pass"
+	filePath := UserInfoDir + userName + ".pass"
 
 	// check directory first
 	ensureDir := ensureDir(filePath)
@@ -20,15 +58,12 @@ func CreateUserInfo(userName, userPass string) bool {
 	fileHandler, error := openOrCreate(filePath)
 	if error != nil {
 		fileHandler.Close()
-		fmt.Printf("CreateUserInfo Error：can not open or create file %s\n", filePath)
+		fmt.Printf("CreateUserInfo Error：can not open or create file %s, %s\n", filePath, error)
 		return false
 	}
 
-	//defer fileHandler.Close()
-
-	// TODO encrypt the userpass
-
-	encryptUserPass := user.EncryptUserpass(userPass)
+	// encrypt the userpass
+	encryptUserPass := user.EncryptUserPass(userPass)
 	// put userPass to the open file third
 	_, writeErr := fileHandler.Write(encryptUserPass)
 	if writeErr != nil {
