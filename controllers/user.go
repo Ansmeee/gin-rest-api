@@ -34,7 +34,7 @@ func Signup(context *gin.Context)  {
 	createRes := file.CreateUserInfo(userName, userPass)
 
 	// response with success
-	if createRes == false {
+	if createRes == true {
 		response["message"] = "注册成功！"
 		context.JSON(200, response)
 		return

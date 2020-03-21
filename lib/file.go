@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	user "gin-rest-api/models"
 	"os"
 	"path/filepath"
 )
@@ -18,6 +19,7 @@ func CreateUserInfo(userName, userPass string) bool {
 	// open or create file second
 	fileHandler, error := openOrCreate(filePath)
 	if error != nil {
+		fileHandler.Close()
 		fmt.Printf("CreateUserInfo Error：can not open or create file %s\n", filePath)
 		return false
 	}
@@ -26,13 +28,16 @@ func CreateUserInfo(userName, userPass string) bool {
 
 	// TODO encrypt the userpass
 
+	encryptUserPass := user.EncryptUserpass(userPass)
 	// put userPass to the open file third
-	_, writeErr := fileHandler.WriteString(userPass)
+	_, writeErr := fileHandler.Write(encryptUserPass)
 	if writeErr != nil {
+		fileHandler.Close()
 		fmt.Printf("CreateUserInfo Error: can not put content to the file %s, %s\n", filePath, writeErr)
 		return false
 	}
 
+	fileHandler.Close()
 	return true
 }
 
