@@ -81,7 +81,7 @@ func Signin(context *gin.Context)  {
 	}
 
 	// check user exists first
-	userExists := file.GetUser(userName)
+	userExists := file.GetUserName(userName)
 	if !userExists {
 		response["code"] = 400
 		response["message"] = "验证失败：该用户不存在！"
