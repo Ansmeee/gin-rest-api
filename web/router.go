@@ -9,6 +9,7 @@ import blog "gin-rest-api/controllers"
 func Register(engine *gin.Engine)  {
 	engine.GET("/", home.Index)
 	engine.GET("/rest/latestBlog", blog.LatestBlog)
+	engine.GET("/rest/info", home.Info)
 	engine.POST("/signup", user.Signup)
 	engine.POST("/signin", user.Signin)
 }

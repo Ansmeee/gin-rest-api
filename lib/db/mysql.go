@@ -6,7 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func Connection() *sql.DB {
+func Connection() (*sql.DB, error) {
 
 	driver 		:= "mysql"
 	userName 	:= "dev"
@@ -21,8 +21,18 @@ func Connection() *sql.DB {
 
 	if conError != nil {
 		util.Error(conError, "Database connection failed")
-		return nil
+		return nil, conError
 	}
 
-	return connection
+	return connection, nil
+}
+
+func Query(con *sql.DB, query string) (*sql.Rows, error) {
+	queryRows, queryError := con.Query(query)
+
+	if queryError != nil {
+		util.Error(queryError, "Query failed")
+	}
+
+	return queryRows, queryError
 }

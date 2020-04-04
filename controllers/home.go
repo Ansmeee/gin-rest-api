@@ -1,9 +1,25 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"gin-rest-api/models"
+	"gin-rest-api/util/response"
+	"github.com/gin-gonic/gin"
+)
 
 func Index(context *gin.Context)  {
 
 
 	context.JSON(500, gin.H{})
+}
+
+func Info(context *gin.Context)  {
+	blogClassTotal, error := models.ClassTotal()
+
+	if error != nil {
+		response.Error(500, "获取失败", context)
+		return
+	}
+
+	response.Success(blogClassTotal, context)
+	return
 }

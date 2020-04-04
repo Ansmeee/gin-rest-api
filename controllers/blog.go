@@ -15,7 +15,7 @@ func LatestBlog(context *gin.Context) {
 	}
 
 	data := blog.MakeData()
-
 	response.Success(data, context)
 
+	return
 }
