@@ -1,19 +1,22 @@
 package response
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 type Response = map[string]interface{}
 
-func Success(data map[string]interface{}, context *gin.Context) {
+func Success(ResponseData Response, context *gin.Context) {
 
-	response := make(Response)
+	response := Response{}
 
 	response["code"] = 200
 	response["msg"] = "ok"
-	response["data"] = data
+	response["data"] = ResponseData
 
+	fmt.Println(ResponseData)
+	fmt.Println(response)
 	context.JSON(200, response)
 }
 

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	file "gin-rest-api/lib"
-	"gin-rest-api/lib/response"
 	"gin-rest-api/models"
+	"gin-rest-api/util/response"
 	"github.com/gin-gonic/gin"
 )
 

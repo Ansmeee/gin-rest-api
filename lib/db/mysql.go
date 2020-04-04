@@ -2,7 +2,8 @@ package db
 
 import (
 	"database/sql"
-	"gin-rest-api/lib"
+	"gin-rest-api/util"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func Connection() *sql.DB {
@@ -19,7 +20,7 @@ func Connection() *sql.DB {
 	connection, conError := sql.Open(driver, dns)
 
 	if conError != nil {
-		lib.Audit("Database connection failed", conError)
+		util.Error(conError, "Database connection failed")
 		return nil
 	}
 

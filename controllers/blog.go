@@ -1,31 +1,21 @@
 package controllers
 
 import (
-	"gin-rest-api/lib"
-	"gin-rest-api/lib/db"
-	"gin-rest-api/lib/response"
+	"gin-rest-api/models"
+	"gin-rest-api/util/response"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func LatestBlog(context *gin.Context) {
 
-	con := db.Connection()
-
-	rows, sqlError := con.Query("select id, name from `user` where id = ?", 1)
-
-	if sqlError != nil {
-		lib.Audit("sql error", sqlError)
-		response.Error(500, "查询失败", context)
+	blog, error := models.LatestOne()
+	if error != nil {
+		response.Error(500, "请求失败", context)
 		return
 	}
 
-	defer rows.Close()
+	data := blog.MakeData()
 
-	type Blog = map[string]interface{}
+	response.Success(data, context)
 
-	blog := make(Blog)
-
-	response.Success(blog, context)
-	return
 }

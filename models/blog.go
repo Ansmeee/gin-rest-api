@@ -1,21 +1,61 @@
 package models
 
+import (
+	"gin-rest-api/lib/db"
+	"gin-rest-api/util"
+	"gin-rest-api/util/response"
+)
+
 type Blog struct {
-	id int
-	title string
-	date string
-	summary string
-	content string
+	Id int
+	Title string
+	Content string
+	Class string
+	Ctime string
 }
 
-func LatestOne() *Blog {
+type Bloger interface {
+	MakeData() map[string]interface{}
+}
 
-	blog := new(Blog)
-	blog.id = 1
-	blog.title = "mysql 性能优化策略"
-	blog.date = "2019-03-23 22:23:22"
-	blog.summary = "msyql 性能优化策略"
-	blog.content = "msyql 性能优化策略"
+func (blog *Blog) MakeData() map[string]interface{} {
+	data := response.Response{}
 
-	return blog
+	data["id"] = blog.Id
+	data["title"] = blog.Title
+	data["content"] = blog.Content
+	data["class"] = blog.Class
+	data["ctime"] = blog.Ctime
+
+	return data
+}
+
+func LatestOne() (Blog, error)  {
+	var blog Blog
+
+	con := db.Connection()
+	if con == nil {
+		return blog, nil
+	}
+
+	defer con.Close()
+
+	query := "SELECT * FROM `blog` ORDER BY `id` DESC LIMIT 1";
+	queryRes, queryErr := con.Query(query)
+
+	if queryErr != nil {
+		util.Error(queryErr, "query failed")
+	}
+
+
+	for queryRes.Next() {
+		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
+		if error != nil {
+			util.Error(error, "failed")
+		}
+	}
+
+	defer queryRes.Close()
+
+	return blog, nil
 }
