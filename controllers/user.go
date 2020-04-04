@@ -2,8 +2,8 @@ package controllers
 
 import (
 	file "gin-rest-api/lib"
-	response "gin-rest-api/lib"
-	user "gin-rest-api/models"
+	"gin-rest-api/lib/response"
+	"gin-rest-api/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -91,7 +91,7 @@ func Signin(context *gin.Context)  {
 
 
 	// encrypt userPass second
-	encryptUserPass := string(user.EncryptUserPass(userPass))
+	encryptUserPass := string(models.EncryptUserPass(userPass))
 
 	// get user origin password third
 	originUserPass := file.GetUserPass(userName)
