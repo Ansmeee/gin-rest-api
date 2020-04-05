@@ -27,8 +27,9 @@ func Connection() (*sql.DB, error) {
 	return connection, nil
 }
 
-func Query(con *sql.DB, query string) (*sql.Rows, error) {
-	queryRows, queryError := con.Query(query)
+func Query(con *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
+
+	queryRows, queryError := con.Query(query, "日志分享")
 
 	if queryError != nil {
 		util.Error(queryError, "Query failed")

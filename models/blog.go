@@ -1,41 +1,28 @@
 package models
 
 import (
-	"fmt"
 	"gin-rest-api/lib/db"
 	"gin-rest-api/util"
 )
 
 type Blog struct {
-	Id int
-	Title string
-	Content string
-	Class string
-	Ctime string
+	Id      int    `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Class   string `json:"class"`
+	Ctime   string `json:"ctime"`
 }
 
-type Bloger interface {
-	MakeData() map[string]interface{}
+var BlogType = map[string]string{
+	"blog":  "日志分享",
+	"study": "学习笔记",
+	"photo": "摄影日记",
 }
 
-func (blog *Blog) MakeData() map[string]interface{} {
-	data := make(map[string]interface{})
-
-	data["id"] = blog.Id
-	data["title"] = blog.Title
-	data["content"] = blog.Content
-	data["class"] = blog.Class
-	data["ctime"] = blog.Ctime
-
-	return data
-}
-
-func LatestOne() (*Blog, error)  {
-	var blog Blog
-
+func LatestOne() (*Blog, error) {
 	con, conError := db.Connection()
 	if conError != nil {
-		return &blog, conError
+		return nil, conError
 	}
 
 	defer con.Close()
@@ -44,23 +31,31 @@ func LatestOne() (*Blog, error)  {
 	queryRes, queryErr := db.Query(con, query)
 
 	if queryErr != nil {
-		return &blog, queryErr
+		return nil, queryErr
 	}
 
+	blog := new(Blog)
 	for queryRes.Next() {
 		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
 		if error != nil {
 			util.Error(error, "failed")
+			return nil, error
 		}
 	}
 
 	defer queryRes.Close()
 
-	return &blog, nil
+	return blog, nil
 }
 
-func ClassTotal() (map[string]interface{}, error) {
-	data := make(map[string]interface{})
+type Class struct {
+	Name  string `json:"name"`
+	Total int    `json:"total"`
+}
+
+var class Class
+var classes []*Class // 定义一个切片
+func ClassTotal() ([]*Class, error) {
 
 	con, conError := db.Connection()
 	if conError != nil {
@@ -76,15 +71,9 @@ func ClassTotal() (map[string]interface{}, error) {
 		return nil, queryErr
 	}
 
-	type Class struct {
-		Name string
-		Total int
-	}
-
-	var class Class
-	var classes []Class
-
-	for queryRes.Next(){
+	class := new(Class)
+	classes = []*Class{}
+	for queryRes.Next() {
 		error := queryRes.Scan(&class.Name, &class.Total)
 		if error != nil {
 			util.Error(error, "failed")
@@ -95,7 +84,64 @@ func ClassTotal() (map[string]interface{}, error) {
 
 	defer queryRes.Close()
 
-	data["blogs"] = classes
-	fmt.Println(classes)
-	return data, nil
+	return classes, nil
+}
+
+var lists []*Blog
+
+func List(blogType string, page int) ([]*Blog, error) {
+	currentType, isPresent := BlogType[blogType]
+	if !isPresent {
+		return nil, nil
+	}
+
+	con, conError := db.Connection()
+	if conError != nil {
+		return nil, conError
+	}
+
+	defer con.Close()
+
+	var ids []int
+	idsQuery := "SELECT `id` FROM `blog` WHERE `class` = ?;"
+	idsRes, idsError := db.Query(con, idsQuery, currentType)
+
+	if idsError != nil {
+		return nil, idsError
+	}
+
+	for idsRes.Next() {
+		var id int
+		error := idsRes.Scan(&id)
+		if error != nil {
+			util.Error(error, "failed")
+			return nil, error
+		}
+
+		ids = append(ids, id)
+	}
+
+	lists = []*Blog{}
+	if len(ids) > 0 {
+		query := "SELECT * FROM `blog` WHERE `id` IN ?;"
+		queryRes, queryError := db.Query(con, query, ids)
+
+		if queryError != nil {
+			return nil, queryError
+		}
+
+		blog := new(Blog)
+		for queryRes.Next() {
+			error := queryRes.Scan(&blog)
+			if error != nil {
+				util.Error(error, "failed")
+				return nil, error
+			}
+
+			lists = append(lists, blog)
+		}
+
+	}
+
+	return lists, nil
 }

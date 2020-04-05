@@ -7,7 +7,6 @@ import (
 type Response = map[string]interface{}
 
 func Success(ResponseData Response, context *gin.Context) {
-
 	response := make(Response)
 
 	response["code"] = 200

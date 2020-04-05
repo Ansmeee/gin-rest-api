@@ -7,19 +7,21 @@ import (
 )
 
 func Index(context *gin.Context)  {
-
-
 	context.JSON(500, gin.H{})
 }
 
+
 func Info(context *gin.Context)  {
-	blogClassTotal, error := models.ClassTotal()
+	blogClasses, error := models.ClassTotal()
 
 	if error != nil {
 		response.Error(500, "获取失败", context)
 		return
 	}
 
-	response.Success(blogClassTotal, context)
+	responseData := make(response.Response)
+	responseData["blogs"] = blogClasses
+	response.Success(responseData, context)
+
 	return
 }
