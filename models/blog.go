@@ -73,9 +73,9 @@ func ClassTotal() ([]*Class, error) {
 		return nil, queryErr
 	}
 
-	class := new(Class)
 	classes = []*Class{}
 	for queryRes.Next() {
+		class := new(Class)
 		error := queryRes.Scan(&class.Name, &class.Total)
 		if error != nil {
 			util.Error(error, "failed")
