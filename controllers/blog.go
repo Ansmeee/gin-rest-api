@@ -12,7 +12,7 @@ func Latest(context *gin.Context) {
 
 	blog, error := blog.LatestOne()
 	if error != nil {
-		response.Error(500, "请求失败", context)
+		response.Error(500, error, context)
 		return
 	}
 
@@ -31,12 +31,12 @@ func List(context *gin.Context) {
 	list, error := blog.List(blogType, page)
 
 	if error != nil {
-		response.Error(500, "获取失败，请重试", context)
+		response.Error(500, error, context)
 		return
 	}
 
 	responseData := make(response.Response)
-	responseData[""] = list
+	responseData["blogs"] = list
 	response.Success(responseData, context)
 
 	return

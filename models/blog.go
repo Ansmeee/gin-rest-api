@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"gin-rest-api/lib/db"
 	"gin-rest-api/util"
 )
@@ -17,6 +18,7 @@ var BlogType = map[string]string{
 	"blog":  "日志分享",
 	"study": "学习笔记",
 	"photo": "摄影日记",
+	"test": "测试",
 }
 
 func LatestOne() (*Blog, error) {
@@ -39,7 +41,7 @@ func LatestOne() (*Blog, error) {
 		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
 		if error != nil {
 			util.Error(error, "failed")
-			return nil, error
+			return nil, errors.New("数据获取失败，请重试")
 		}
 	}
 
@@ -77,6 +79,7 @@ func ClassTotal() ([]*Class, error) {
 		error := queryRes.Scan(&class.Name, &class.Total)
 		if error != nil {
 			util.Error(error, "failed")
+			return nil, errors.New("数据获取失败，请重试")
 		}
 
 		classes = append(classes, class)
@@ -91,18 +94,21 @@ var lists []*Blog
 
 func List(blogType string, page int) ([]*Blog, error) {
 	currentType, isPresent := BlogType[blogType]
+
 	if !isPresent {
-		return nil, nil
+		return nil, errors.New("查询失败，不存在该类型")
 	}
 
+
 	con, conError := db.Connection()
+
 	if conError != nil {
 		return nil, conError
 	}
 
 	defer con.Close()
 
-	var ids []int
+	ids := make([]interface{}, 0)
 	idsQuery := "SELECT `id` FROM `blog` WHERE `class` = ?;"
 	idsRes, idsError := db.Query(con, idsQuery, currentType)
 
@@ -115,16 +121,19 @@ func List(blogType string, page int) ([]*Blog, error) {
 		error := idsRes.Scan(&id)
 		if error != nil {
 			util.Error(error, "failed")
-			return nil, error
+			return nil, errors.New("数据获取失败，请重试")
 		}
 
 		ids = append(ids, id)
 	}
 
-	lists = []*Blog{}
+	lists := make([]*Blog, 0)
 	if len(ids) > 0 {
-		query := "SELECT * FROM `blog` WHERE `id` IN ?;"
-		queryRes, queryError := db.Query(con, query, ids)
+
+		query := "SELECT * FROM `blog` WHERE `id`"
+		query = db.PrepareInArgs(query, ids)
+
+		queryRes, queryError := db.Query(con, query, ids...)
 
 		if queryError != nil {
 			return nil, queryError
@@ -132,15 +141,16 @@ func List(blogType string, page int) ([]*Blog, error) {
 
 		blog := new(Blog)
 		for queryRes.Next() {
-			error := queryRes.Scan(&blog)
+			error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
 			if error != nil {
 				util.Error(error, "failed")
-				return nil, error
+				return nil, errors.New("数据获取失败，请重试")
 			}
 
 			lists = append(lists, blog)
 		}
 
+		queryRes.Close()
 	}
 
 	return lists, nil

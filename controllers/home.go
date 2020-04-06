@@ -15,7 +15,7 @@ func Info(context *gin.Context)  {
 	blogClasses, error := models.ClassTotal()
 
 	if error != nil {
-		response.Error(500, "获取失败", context)
+		response.Error(500, error, context)
 		return
 	}
 
