@@ -18,7 +18,6 @@ var BlogType = map[string]string{
 	"blog":  "日志分享",
 	"study": "学习笔记",
 	"photo": "摄影日记",
-	"test": "测试",
 }
 
 func LatestOne() (*Blog, error) {
@@ -139,8 +138,8 @@ func List(blogType string, page int) ([]*Blog, error) {
 			return nil, queryError
 		}
 
-		blog := new(Blog)
 		for queryRes.Next() {
+			blog := new(Blog)
 			error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
 			if error != nil {
 				util.Error(error, "failed")
