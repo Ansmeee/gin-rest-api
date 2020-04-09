@@ -10,20 +10,11 @@ import (
 	"strings"
 )
 
-const ConErr = "数据库连接失败，请重试"
-const QueryErr = "数据查询失败，请重试"
+const ConErr = "连接失败，请重试"
+const QueryErr = "查询失败，请重试"
 
 func Connection() (*sql.DB, error) {
-
-	userName := database.Mysql.UserName
-	passWord := database.Mysql.PassWord
-	address := database.Mysql.Address
-	port := database.Mysql.Port
-	database := database.Mysql.Database
-
-	dns := userName + ":" + passWord + "@tcp(" + address + ":" + port + ")/" + database
-
-	connection, conError := sql.Open("mysql", dns)
+	connection, conError := sql.Open(database.Dns.Driver, makeDNS())
 
 	if conError != nil {
 		util.Error(conError, "Database Connection Failed")
@@ -53,4 +44,14 @@ func PrepareInArgs(query string, args []interface{}) string {
 	inQuery := fmt.Sprintf(query, inArgs)
 
 	return inQuery
+}
+
+func makeDNS() string {
+	userName := database.Dns.UserName
+	passWord := database.Dns.PassWord
+	address := database.Dns.Address
+	port := database.Dns.Port
+	database := database.Dns.Database
+
+	return userName + ":" + passWord + "@tcp(" + address + ":" + port + ")/" + database
 }
