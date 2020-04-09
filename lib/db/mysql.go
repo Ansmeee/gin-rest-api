@@ -16,8 +16,8 @@ func Connection() (*sql.DB, error) {
 
 	driver := "mysql"
 	userName := "dev"
-	passWord := "ansme007"
-	address := "192.168.33.10"
+	passWord := "ansme007.blog"
+	address := "127.0.0.1"
 	port := "3306"
 	database := "blog"
 

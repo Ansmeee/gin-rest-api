@@ -9,6 +9,7 @@ import (
 type Blog struct {
 	Id      int    `json:"id"`
 	Title   string `json:"title"`
+	Summary string `json:"summary"`
 	Content string `json:"content"`
 	Class   string `json:"class"`
 	Ctime   string `json:"ctime"`
@@ -18,6 +19,35 @@ var BlogType = map[string]string{
 	"blog":  "日志分享",
 	"study": "学习笔记",
 	"photo": "摄影日记",
+}
+
+
+func Find(id int) (*Blog, error)  {
+	con, conError := db.Connection()
+	if conError != nil {
+		return nil, conError
+	}
+
+	defer con.Close()
+
+	query := "SELECT * FROM `blog` WHERE `id` = ? limit 1"
+	queryRes, queryError := db.Query(con, query, id)
+	if queryError != nil {
+		return nil, queryError
+	}
+
+	blog := new(Blog)
+	for queryRes.Next() {
+		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Summary, &blog.Content, &blog.Class, &blog.Ctime)
+		if error != nil {
+			util.Error(error, "Scan Data Failed")
+			return nil, errors.New("数据获取失败，请重试")
+		}
+	}
+
+	defer queryRes.Close()
+
+	return blog, nil
 }
 
 func LatestOne() (*Blog, error) {
@@ -37,9 +67,9 @@ func LatestOne() (*Blog, error) {
 
 	blog := new(Blog)
 	for queryRes.Next() {
-		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
+		error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Summary, &blog.Content, &blog.Class, &blog.Ctime)
 		if error != nil {
-			util.Error(error, "failed")
+			util.Error(error, "Scan Data Failed")
 			return nil, errors.New("数据获取失败，请重试")
 		}
 	}
@@ -77,7 +107,7 @@ func ClassTotal() ([]*Class, error) {
 		class := new(Class)
 		error := queryRes.Scan(&class.Name, &class.Total)
 		if error != nil {
-			util.Error(error, "failed")
+			util.Error(error, "Scan Data Failed")
 			return nil, errors.New("数据获取失败，请重试")
 		}
 
@@ -119,7 +149,7 @@ func List(blogType string, page int) ([]*Blog, error) {
 		var id int
 		error := idsRes.Scan(&id)
 		if error != nil {
-			util.Error(error, "failed")
+			util.Error(error, "Scan Data Failed")
 			return nil, errors.New("数据获取失败，请重试")
 		}
 
@@ -129,7 +159,7 @@ func List(blogType string, page int) ([]*Blog, error) {
 	lists := make([]*Blog, 0)
 	if len(ids) > 0 {
 
-		query := "SELECT * FROM `blog` WHERE `id`"
+		query := "SELECT id, title, summary, class, ctime FROM `blog` WHERE `id`"
 		query = db.PrepareInArgs(query, ids)
 
 		queryRes, queryError := db.Query(con, query, ids...)
@@ -140,9 +170,9 @@ func List(blogType string, page int) ([]*Blog, error) {
 
 		for queryRes.Next() {
 			blog := new(Blog)
-			error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Class, &blog.Ctime)
+			error := queryRes.Scan(&blog.Id, &blog.Title, &blog.Summary, &blog.Class, &blog.Ctime)
 			if error != nil {
-				util.Error(error, "failed")
+				util.Error(error, "Scan Data Failed")
 				return nil, errors.New("数据获取失败，请重试")
 			}
 

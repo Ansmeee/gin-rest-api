@@ -41,3 +41,20 @@ func List(context *gin.Context) {
 
 	return
 }
+
+func Detail(context *gin.Context)  {
+	id, _ := strconv.Atoi(context.Query("id"))
+
+	blog, error := blog.Find(id)
+
+	if error != nil {
+		response.Error(500, error, context)
+		return
+	}
+
+	responseData := make(response.Response)
+	responseData["blog"] = blog
+	response.Success(responseData, context)
+
+	return
+}

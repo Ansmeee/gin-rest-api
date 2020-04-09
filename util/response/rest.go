@@ -16,11 +16,11 @@ func Success(ResponseData Response, context *gin.Context) {
 	context.JSON(200, response)
 }
 
-func Error(code int, errorMsg error, context *gin.Context) {
+func Error(code int, error error, context *gin.Context) {
 	response := make(Response)
 
 	response["code"] = code
-	response["msg"] = errorMsg.Error()
+	response["msg"] = error.Error()
 
 	context.JSON(200, response)
 }
