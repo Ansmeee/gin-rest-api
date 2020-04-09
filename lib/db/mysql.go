@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	database "gin-rest-api/config"
 	"gin-rest-api/util"
 	_ "github.com/go-sql-driver/mysql"
 	"strings"
@@ -14,16 +15,15 @@ const QueryErr = "数据查询失败，请重试"
 
 func Connection() (*sql.DB, error) {
 
-	driver := "mysql"
-	userName := "dev"
-	passWord := "ansme007.blog"
-	address := "127.0.0.1"
-	port := "3306"
-	database := "blog"
+	userName := database.Mysql.UserName
+	passWord := database.Mysql.PassWord
+	address := database.Mysql.Address
+	port := database.Mysql.Port
+	database := database.Mysql.Database
 
 	dns := userName + ":" + passWord + "@tcp(" + address + ":" + port + ")/" + database
 
-	connection, conError := sql.Open(driver, dns)
+	connection, conError := sql.Open("mysql", dns)
 
 	if conError != nil {
 		util.Error(conError, "Database Connection Failed")
