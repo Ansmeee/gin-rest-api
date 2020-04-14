@@ -24,6 +24,11 @@ func Connection() (*sql.DB, error) {
 	return connection, nil
 }
 
+func Insert(con *sql.DB, query string, args ...interface{}) (int, error) {
+
+	return 0, nil
+}
+
 func Query(con *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
 
 	queryRows, queryError := con.Query(query, args...)

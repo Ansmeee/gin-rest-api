@@ -2,8 +2,10 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"gin-rest-api/lib/db"
 	"gin-rest-api/util"
+	"strings"
 )
 
 type Blog struct {
@@ -21,8 +23,24 @@ var BlogType = map[string]string{
 	"photo": "摄影日记",
 }
 
+func Create(blog *Blog) (int, error) {
+	con, conError := db.Connection()
+	if conError != nil {
+		return 0, conError
+	}
 
-func Find(id int) (*Blog, error)  {
+	defer con.Close()
+
+	query := "INSERT INTO `blog` (`title`, `summary`, `content`, `class``) values (?, ?, ?, ?)"
+	queryRes, queryError := db.Insert(con, query, blog.Title, blog.Summary, blog.Content, BlogType[blog.Class])
+	if queryError != nil {
+		return 0, queryError
+	}
+
+	return queryRes, nil
+}
+
+func Find(id int) (*Blog, error) {
 	con, conError := db.Connection()
 	if conError != nil {
 		return nil, conError
@@ -58,7 +76,7 @@ func LatestOne() (*Blog, error) {
 
 	defer con.Close()
 
-	query := "SELECT * FROM `blog` ORDER BY `id` DESC LIMIT 1";
+	query := "SELECT * FROM `blog` ORDER BY `id` DESC LIMIT 1"
 	queryRes, queryErr := db.Query(con, query)
 
 	if queryErr != nil {
@@ -121,14 +139,7 @@ func ClassTotal() ([]*Class, error) {
 
 var lists []*Blog
 
-func List(blogType string, page int) ([]*Blog, error) {
-	currentType, isPresent := BlogType[blogType]
-
-	if !isPresent {
-		return nil, errors.New("查询失败，不存在该类型")
-	}
-
-
+func List(page int, blogType string) ([]*Blog, error) {
 	con, conError := db.Connection()
 
 	if conError != nil {
@@ -138,8 +149,20 @@ func List(blogType string, page int) ([]*Blog, error) {
 	defer con.Close()
 
 	ids := make([]interface{}, 0)
-	idsQuery := "SELECT `id` FROM `blog` WHERE `class` = ?;"
-	idsRes, idsError := db.Query(con, idsQuery, currentType)
+
+	wheres := make([]string, 0)
+	idsQuery := "SELECT `id` FROM `blog`"
+
+	currentType, isPresent := BlogType[blogType]
+	if isPresent {
+		wheres = append(wheres, fmt.Sprintf("`class` = %s", currentType))
+	}
+
+	if len(wheres) > 0 {
+		idsQuery = idsQuery + " WHERE " + strings.Join(wheres, "AND")
+	}
+
+	idsRes, idsError := db.Query(con, idsQuery)
 
 	if idsError != nil {
 		return nil, idsError
@@ -156,11 +179,13 @@ func List(blogType string, page int) ([]*Blog, error) {
 		ids = append(ids, id)
 	}
 
+	total := len(ids)
 	lists := make([]*Blog, 0)
-	if len(ids) > 0 {
+	if total > 0 {
 
 		query := "SELECT id, title, summary, class, ctime FROM `blog` WHERE `id`"
 		query = db.PrepareInArgs(query, ids)
+		query += " ORDER BY `id` DESC"
 
 		queryRes, queryError := db.Query(con, query, ids...)
 
