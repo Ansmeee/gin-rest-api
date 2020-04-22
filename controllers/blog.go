@@ -26,10 +26,13 @@ func Latest(context *gin.Context) {
 
 // 获取日志列表
 func List(context *gin.Context) {
-	blogType := context.Query("type")
-	page, _ := strconv.Atoi(context.Query("page"))
+	params := new(blog.Params)
 
-	list, error := blog.List(page, blogType)
+	params.BlogType = context.Query("type")
+	params.Page, _ = strconv.Atoi(context.Query("page"))
+	params.Keywords = context.Query("keywords")
+
+	list, error := blog.List(params)
 
 	if error != nil {
 		response.Error(500, error, context)

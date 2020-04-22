@@ -19,7 +19,7 @@ type Blog struct {
 
 var BlogType = map[string]string{
 	"blog":  "日志分享",
-	"study": "学习笔记",
+	"note":  "学习笔记",
 	"photo": "摄影日记",
 }
 
@@ -139,7 +139,16 @@ func ClassTotal() ([]*Class, error) {
 
 var lists []*Blog
 
-func List(page int, blogType string) ([]*Blog, error) {
+type Params struct {
+	Keywords string
+	Page     int
+	BlogType string
+}
+
+func List(params *Params) ([]*Blog, error) {
+	blogType := params.BlogType
+	keywords := params.Keywords
+
 	con, conError := db.Connection()
 
 	if conError != nil {
@@ -155,13 +164,18 @@ func List(page int, blogType string) ([]*Blog, error) {
 
 	currentType, isPresent := BlogType[blogType]
 	if isPresent {
-		wheres = append(wheres, fmt.Sprintf("`class` = %s", currentType))
+		wheres = append(wheres, fmt.Sprintf("`class` = '%s'", currentType))
+	}
+
+	if keywords != "" {
+		wheres = append(wheres, fmt.Sprintf("`title` like '%s'", "%"+keywords+"%"))
 	}
 
 	if len(wheres) > 0 {
-		idsQuery = idsQuery + " WHERE " + strings.Join(wheres, "AND")
+		idsQuery = idsQuery + " WHERE " + strings.Join(wheres, " AND ")
 	}
 
+	fmt.Println(idsQuery)
 	idsRes, idsError := db.Query(con, idsQuery)
 
 	if idsError != nil {
